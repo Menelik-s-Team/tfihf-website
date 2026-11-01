@@ -17,19 +17,44 @@ const nextConfig: NextConfig = {
     'pg',
     'drizzle-orm',
     '@payloadcms/db-postgres',
+    '@payloadcms/drizzle',
+    'nodemailer',
+    '@payloadcms/email-nodemailer',
+    '@payloadcms/storage-vercel-blob',
   ],
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Force pg and all its subpaths to be treated as synchronous CJS
-      // externals instead of async ESM dynamic imports. This prevents webpack
-      // from emitting the async module wrapper (c.a / __webpack_require__.a)
-      // around pg, which was causing a race condition in the admin RSC.
+      // Force db/email/storage packages (and pg) to be synchronous CJS externals
+      // instead of async ESM dynamic imports. Even though these are in
+      // serverExternalPackages, Next.js can still emit them as async ESM modules
+      // when they are transitively imported by a bundled module (payload.config.ts).
+      // That async module wrapping (c.a / __webpack_require__.a) creates a
+      // $() accessor race in the admin RSC, causing:
+      //
+      //   TypeError: Cannot destructure property 'config' of '$(...)'
+      //   as it is undefined.
+      //
+      // The webpack externals function below intercepts at bundle time and emits
+      // synchronous require() calls, breaking the entire async module chain.
+      const CJS_EXTERNALS = [
+        'pg',
+        '@payloadcms/db-postgres',
+        'drizzle-orm',
+        '@payloadcms/drizzle',
+        'nodemailer',
+        '@payloadcms/email-nodemailer',
+        '@payloadcms/storage-vercel-blob',
+      ]
       const existingExternals = Array.isArray(config.externals) ? config.externals : []
       config.externals = [
         ...existingExternals,
         ({ request }: { request?: string }, callback: (err?: Error | null, result?: string) => void) => {
-          if (request && (request === 'pg' || request.startsWith('pg/'))) {
-            return callback(null, `commonjs ${request}`)
+          if (request) {
+            for (const pkg of CJS_EXTERNALS) {
+              if (request === pkg || request.startsWith(`${pkg}/`)) {
+                return callback(null, `commonjs ${request}`)
+              }
+            }
           }
           callback()
         },
