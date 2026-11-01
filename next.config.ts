@@ -50,6 +50,7 @@ const nextConfig: NextConfig = {
         ...existingExternals,
         ({ request }: { request?: string }, callback: (err?: Error | null, result?: string) => void) => {
           if (request) {
+            // Force db/email/storage packages (and pg) to be synchronous CJS externals.
             for (const pkg of CJS_EXTERNALS) {
               if (request === pkg || request.startsWith(`${pkg}/`)) {
                 return callback(null, `commonjs ${request}`)

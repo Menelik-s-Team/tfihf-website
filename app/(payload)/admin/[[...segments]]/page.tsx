@@ -19,8 +19,13 @@ type Args = {
   }>
 }
 
-export const generateMetadata = ({ params, searchParams }: Args): Promise<Metadata> =>
-  generatePageMetadata({ config, params, searchParams })
+export const generateMetadata = async ({ params, searchParams }: Args): Promise<Metadata> => {
+  try {
+    return await generatePageMetadata({ config, params, searchParams })
+  } catch {
+    return {}
+  }
+}
 
 export default function Page({ params, searchParams }: Args) {
   return RootPage({ config, importMap, params, searchParams })
