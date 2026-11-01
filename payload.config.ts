@@ -1,5 +1,6 @@
 import { buildConfig } from 'payload'
-import { resendAdapter } from '@payloadcms/email-resend'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import nodemailer from 'nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
@@ -123,10 +124,18 @@ export default buildConfig({
     },
   ],
   editor: lexicalEditor({}),
-  email: resendAdapter({
-    defaultFromAddress: 'admin@tfihf.com',
+  email: nodemailerAdapter({
+    defaultFromAddress: process.env.TITAN_EMAIL || 'admin@tfihf.com',
     defaultFromName: 'TFIHF',
-    apiKey: process.env.RESEND_API_KEY || '',
+    transport: nodemailer.createTransport({
+      host: 'smtp.titan.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.TITAN_EMAIL,
+        pass: process.env.TITAN_PASSWORD,
+      },
+    }),
   }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
