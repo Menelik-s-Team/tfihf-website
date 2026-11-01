@@ -29,7 +29,9 @@ const nextConfig: NextConfig = {
         '@payloadcms/drizzle',
         'nodemailer',
         '@payloadcms/email-nodemailer',
-        '@payloadcms/storage-vercel-blob',
+        // @payloadcms/storage-vercel-blob is intentionally excluded: it is ESM-only,
+        // so commonjs externalization causes ERR_REQUIRE_ESM at runtime. Webpack
+        // bundles it instead; CSS imports are suppressed by the rule below.
       ]
 
       // Client-only subpaths that must never be evaluated on the server.
