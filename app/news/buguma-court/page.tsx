@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import FooterCMS from "@/components/FooterCMS";
 
 export default function BugumaCourtPage() {
   return (
@@ -82,7 +82,7 @@ export default function BugumaCourtPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      <FooterCMS />
     </>
   );
 }

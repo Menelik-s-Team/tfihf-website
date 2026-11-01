@@ -2,34 +2,34 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Mission from "@/components/Mission";
 import Programs from "@/components/Programs";
-import Projects from "@/components/Projects";
+import ProjectsWrapper from "@/components/ProjectsWrapper";
 import Testimonials from "@/components/Testimonials";
 import Impact from "@/components/Impact";
-import CountdownTimer from "@/components/CountdownTimer";
+import CountdownTimerWrapper from "@/components/CountdownTimerWrapper";
 import UpcomingEvents from "@/components/UpcomingEvents";
 import GetInvolved from "@/components/GetInvolved";
 import News from "@/components/News";
-import Contact from "@/components/Contact";
-import Footer from "@/components/Footer";
+import ContactWrapper from "@/components/ContactWrapper";
+import FooterCMS from "@/components/FooterCMS";
 
 export default function Home() {
   return (
     <>
       <Navbar />
       <main>
-        <CountdownTimer />
+        <CountdownTimerWrapper />
         <Hero />
         <Mission />
         <Programs />
-        <Projects />
+        <ProjectsWrapper />
         <Testimonials />
         <Impact />
         <UpcomingEvents />
         <GetInvolved />
         <News />
-        <Contact />
+        <ContactWrapper />
       </main>
-      <Footer />
+      <FooterCMS />
     </>
   );
 }

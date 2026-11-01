@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import FooterCMS from "@/components/FooterCMS";
 
 export default function BringBackTheVillagePage() {
   return (
@@ -100,7 +100,7 @@ export default function BringBackTheVillagePage() {
           </div>
         </div>
       </main>
-      <Footer />
+      <FooterCMS />
     </>
   );
 }

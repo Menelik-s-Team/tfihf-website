@@ -16,7 +16,7 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ""
 );
 
-const PRESET_AMOUNTS = [10, 25, 50, 100, 250, 500];
+const DEFAULT_PRESET_AMOUNTS = [10, 25, 50, 100, 250, 500];
 
 const CARD_STYLE = {
   style: {
@@ -30,11 +30,11 @@ const CARD_STYLE = {
   },
 };
 
-function CheckoutForm() {
+function CheckoutForm({ presetAmounts = DEFAULT_PRESET_AMOUNTS }: { presetAmounts?: number[] }) {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [selectedAmount, setSelectedAmount] = useState<number>(50);
+  const [selectedAmount, setSelectedAmount] = useState<number>(presetAmounts[2] ?? 50);
   const [customAmount, setCustomAmount] = useState("");
   const [useCustom, setUseCustom] = useState(false);
 
@@ -129,7 +129,7 @@ function CheckoutForm() {
           Donation Amount
         </label>
         <div className="grid grid-cols-3 gap-3 mb-3">
-          {PRESET_AMOUNTS.map((amt) => (
+          {presetAmounts.map((amt) => (
             <button
               key={amt}
               type="button"
@@ -285,10 +285,10 @@ function CheckoutForm() {
   );
 }
 
-export default function DonateForm() {
+export default function DonateForm({ presetAmounts }: { presetAmounts?: number[] }) {
   return (
     <Elements stripe={stripePromise}>
-      <CheckoutForm />
+      <CheckoutForm presetAmounts={presetAmounts} />
     </Elements>
   );
 }

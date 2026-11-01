@@ -12,7 +12,45 @@ const IGIcon = () => (
   </svg>
 );
 
-export default function Footer() {
+export type FooterProps = {
+  ein?: string
+  footerTagline?: string
+  copyrightText?: string
+  address?: string
+  city?: string
+  phone?: string
+  email?: string
+  twitter?: string
+  instagram?: string
+}
+
+const FOOTER_DEFAULTS: Required<FooterProps> = {
+  ein: "83-1486115",
+  footerTagline:
+    "The Future Is Here Foundation, Inc. — a nonprofit serving communities through sports, culture, and youth development since 2003.",
+  copyrightText: "",
+  address: "1445 Woodmont LN STE 1905",
+  city: "Atlanta, GA 30318",
+  phone: "+1 770-946-2629",
+  email: "admin@tfihf.com",
+  twitter: "TFIHFoundation",
+  instagram: "tfihf2003",
+}
+
+export default function Footer({
+  ein = FOOTER_DEFAULTS.ein,
+  footerTagline = FOOTER_DEFAULTS.footerTagline,
+  copyrightText,
+  address = FOOTER_DEFAULTS.address,
+  city = FOOTER_DEFAULTS.city,
+  phone = FOOTER_DEFAULTS.phone,
+  email = FOOTER_DEFAULTS.email,
+  twitter = FOOTER_DEFAULTS.twitter,
+  instagram = FOOTER_DEFAULTS.instagram,
+}: FooterProps) {
+  const year = new Date().getFullYear()
+  const copyright = copyrightText || `© ${year} The Future Is Here Foundation, Inc. All rights reserved.`
+
   return (
     <footer className="bg-[#080808] border-t border-white/10 py-12">
       <div className="max-w-7xl mx-auto px-6">
@@ -22,10 +60,9 @@ export default function Footer() {
               <span className="text-[#C8102E] font-black text-2xl">TFIHF</span>
             </div>
             <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-              The Future Is Here Foundation, Inc. — a nonprofit serving communities
-              through sports, culture, and youth development since 2003.
+              {footerTagline}
             </p>
-            <p className="text-white/30 text-xs mt-3">EIN: 83-1486115</p>
+            <p className="text-white/30 text-xs mt-3">EIN: {ein}</p>
           </div>
 
           <div>
@@ -48,14 +85,14 @@ export default function Footer() {
           <div>
             <p className="text-white font-bold text-sm mb-4">Contact</p>
             <div className="flex flex-col gap-2 text-white/50 text-sm">
-              <span>admin@tfihf.com</span>
-              <span>+1 770-946-2629</span>
-              <span>1445 Woodmont LN STE 1905</span>
-              <span>Atlanta, GA 30318</span>
+              <span>{email}</span>
+              <span>{phone}</span>
+              <span>{address}</span>
+              <span>{city}</span>
             </div>
             <div className="flex gap-3 mt-5">
               <a
-                href="https://twitter.com/TFIHFoundation"
+                href={`https://twitter.com/${twitter}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/40 hover:text-[#C8102E] transition-colors"
@@ -63,7 +100,7 @@ export default function Footer() {
                 <XIcon />
               </a>
               <a
-                href="https://instagram.com/tfihf2003"
+                href={`https://instagram.com/${instagram}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/40 hover:text-[#C8102E] transition-colors"
@@ -71,7 +108,7 @@ export default function Footer() {
                 <IGIcon />
               </a>
               <a
-                href="mailto:admin@tfihf.com"
+                href={`mailto:${email}`}
                 className="text-white/40 hover:text-[#C8102E] transition-colors"
               >
                 <Mail size={18} />
@@ -81,9 +118,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-white/30 text-xs">
-            © {new Date().getFullYear()} The Future Is Here Foundation, Inc. All rights reserved.
-          </p>
+          <p className="text-white/30 text-xs">{copyright}</p>
           <p className="text-white/20 text-xs">
             Website by{" "}
             <span className="text-[#C8102E]/50 font-semibold">Apex Digital</span>
@@ -91,5 +126,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

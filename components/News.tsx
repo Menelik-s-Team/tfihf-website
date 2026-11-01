@@ -1,4 +1,7 @@
-const posts = [
+import { getPayload } from 'payload'
+import config from '@payload-config'
+
+const FALLBACK_POSTS = [
   {
     date: "May 2026",
     category: "Events",
@@ -26,9 +29,39 @@ const posts = [
     image: "/images/news-camp-us.jpg",
     href: "/news/us-camp-idaho",
   },
-];
+]
 
-export default function News() {
+async function getNewsPosts() {
+  const payload = await getPayload({ config })
+  return payload.find({
+    collection: 'posts',
+    where: { status: { equals: 'published' } },
+    limit: 3,
+    sort: '-publishedDate',
+  })
+}
+
+export default async function News() {
+  const result = await getNewsPosts().catch(() => null)
+  const cmsPosts = result?.docs
+
+  const posts =
+    cmsPosts && cmsPosts.length > 0
+      ? cmsPosts.map((p) => ({
+          date: p.publishedDate
+            ? new Date(p.publishedDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+            : '',
+          category: 'News',
+          title: p.title,
+          excerpt: p.summary ?? '',
+          image:
+            p.coverImage && typeof p.coverImage === 'object' && 'url' in p.coverImage
+              ? (p.coverImage.url as string)
+              : '/images/news-bbtv.webp',
+          href: `/news/${p.slug}`,
+        }))
+      : FALLBACK_POSTS
+
   return (
     <section id="news" className="py-24 bg-[#FFF8F0]">
       <div className="max-w-7xl mx-auto px-6">
@@ -75,5 +108,5 @@ export default function News() {
         </div>
       </div>
     </section>
-  );
+  )
 }

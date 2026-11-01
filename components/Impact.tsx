@@ -1,13 +1,25 @@
-const stats = [
+import { getPayload } from 'payload'
+import config from '@payload-config'
+
+const FALLBACK_STATS = [
   { value: "10+", label: "Years of Service" },
   { value: "500+", label: "Youth Impacted" },
   { value: "3", label: "Countries Reached" },
   { value: "20+", label: "Tournaments Organized" },
   { value: "100+", label: "Equipment Donations" },
   { value: "2013", label: "First Community Event" },
-];
+]
 
-export default function Impact() {
+async function getImpactData() {
+  const payload = await getPayload({ config })
+  return payload.findGlobal({ slug: 'homepage' })
+}
+
+export default async function Impact() {
+  const cms = await getImpactData().catch(() => null)
+  const stats =
+    cms?.impact && cms.impact.length > 0 ? cms.impact : FALLBACK_STATS
+
   return (
     <section id="impact" className="py-24 bg-[#0D0D0D] border-y-2 border-[#C8102E]">
       <div className="max-w-7xl mx-auto px-6">
@@ -33,5 +45,5 @@ export default function Impact() {
         </div>
       </div>
     </section>
-  );
+  )
 }

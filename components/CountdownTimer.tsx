@@ -1,29 +1,34 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const EVENT_DATE = new Date("2026-10-16T08:00:00-05:00");
+type CountdownTimerProps = {
+  eventName: string
+  eventDate: string
+  ctaLabel: string
+  ctaLink: string
+}
 
-function getTimeLeft() {
-  const diff = EVENT_DATE.getTime() - Date.now();
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, started: true };
+function getTimeLeft(eventDate: string) {
+  const diff = new Date(eventDate).getTime() - Date.now()
+  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, started: true }
   return {
     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
     hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
     minutes: Math.floor((diff / (1000 * 60)) % 60),
     seconds: Math.floor((diff / 1000) % 60),
     started: false,
-  };
+  }
 }
 
-export default function CountdownTimer() {
-  const [time, setTime] = useState(getTimeLeft());
+export default function CountdownTimer({ eventName, eventDate, ctaLabel, ctaLink }: CountdownTimerProps) {
+  const [time, setTime] = useState(getTimeLeft(eventDate))
 
   useEffect(() => {
-    const id = setInterval(() => setTime(getTimeLeft()), 1000);
-    return () => clearInterval(id);
-  }, []);
+    const id = setInterval(() => setTime(getTimeLeft(eventDate)), 1000)
+    return () => clearInterval(id)
+  }, [eventDate])
 
-  const pad = (n: number) => String(n).padStart(2, "0");
+  const pad = (n: number) => String(n).padStart(2, "0")
 
   return (
     <div style={{ background: "linear-gradient(135deg, #0a1628 0%, #0f2744 50%, #0a1628 100%)", borderBottom: "2px solid #00B4A6" }} className="py-10">
@@ -35,16 +40,13 @@ export default function CountdownTimer() {
           </span>
         </div>
         <h3 className="text-white text-xl md:text-2xl font-black mb-1">
-          Train the Trainer Program
+          {eventName}
         </h3>
-        <p className="text-white/40 text-sm mb-8">
-          Oct 16–18 · In Person & Zoom · The Future Is Here Foundation
-        </p>
 
         {time.started ? (
-          <p className="text-[#00B4A6] text-2xl font-black">The event has started — join now!</p>
+          <p className="text-[#00B4A6] text-2xl font-black mt-4">The event has started — join now!</p>
         ) : (
-          <div className="flex justify-center gap-2 sm:gap-4 md:gap-8">
+          <div className="flex justify-center gap-2 sm:gap-4 md:gap-8 mt-8">
             {[
               { value: time.days, label: "Days" },
               { value: time.hours, label: "Hours" },
@@ -72,13 +74,13 @@ export default function CountdownTimer() {
         )}
 
         <a
-          href="/camp-registration?event=train-the-trainer"
+          href={ctaLink}
           className="inline-block mt-8 px-8 py-3 rounded-full font-black text-sm text-white hover:opacity-80 transition-all"
           style={{ background: "#00B4A6" }}
         >
-          Register Before It&apos;s Full →
+          {ctaLabel}
         </a>
       </div>
     </div>
-  );
+  )
 }

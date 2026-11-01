@@ -14,6 +14,19 @@ import { Homepage } from './globals/Homepage'
 import { AboutPage } from './globals/AboutPage'
 import { SiteSettings } from './globals/SiteSettings'
 
+async function revalidate(paths: string[]) {
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL
+  const secret = process.env.REVALIDATION_SECRET
+  if (!serverUrl || !secret) return
+  await Promise.all(
+    paths.map((path) =>
+      fetch(`${serverUrl}/api/revalidate?secret=${secret}&path=${path}`, { method: 'POST' }).catch(
+        () => null
+      )
+    )
+  )
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -21,8 +34,93 @@ export default buildConfig({
       titleSuffix: '- TFIHF Admin',
     },
   },
-  collections: [Users, Posts, Events, Gallery, Projects, BoardMembers, StaffMembers, Media],
-  globals: [Homepage, AboutPage, SiteSettings],
+  collections: [
+    Users,
+    {
+      ...Posts,
+      hooks: {
+        afterChange: [
+          async ({ doc }) => {
+            await revalidate(['/', '/news', `/news/${doc.slug}`])
+          },
+        ],
+      },
+    },
+    {
+      ...Events,
+      hooks: {
+        afterChange: [
+          async () => {
+            await revalidate(['/'])
+          },
+        ],
+      },
+    },
+    {
+      ...Projects,
+      hooks: {
+        afterChange: [
+          async () => {
+            await revalidate(['/'])
+          },
+        ],
+      },
+    },
+    {
+      ...BoardMembers,
+      hooks: {
+        afterChange: [
+          async () => {
+            await revalidate(['/about'])
+          },
+        ],
+      },
+    },
+    {
+      ...StaffMembers,
+      hooks: {
+        afterChange: [
+          async () => {
+            await revalidate(['/about'])
+          },
+        ],
+      },
+    },
+    Gallery,
+    Media,
+  ],
+  globals: [
+    {
+      ...Homepage,
+      hooks: {
+        afterChange: [
+          async () => {
+            await revalidate(['/'])
+          },
+        ],
+      },
+    },
+    {
+      ...AboutPage,
+      hooks: {
+        afterChange: [
+          async () => {
+            await revalidate(['/about'])
+          },
+        ],
+      },
+    },
+    {
+      ...SiteSettings,
+      hooks: {
+        afterChange: [
+          async () => {
+            await revalidate(['/', '/about', '/donate'])
+          },
+        ],
+      },
+    },
+  ],
   editor: lexicalEditor({}),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

@@ -1,7 +1,25 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import FooterCMS from "@/components/FooterCMS";
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
-const board = [
+function renderRichText(content: unknown): string {
+  if (!content || typeof content !== 'object') return ''
+  const root = (content as { root?: { children?: unknown[] } }).root
+  if (!root?.children) return ''
+  return root.children
+    .map((node: unknown) => {
+      const n = node as { type?: string; children?: { text?: string }[] }
+      if (n.type === 'paragraph') {
+        const text = n.children?.map((c) => c.text || '').join('') || ''
+        return `<p>${text}</p>`
+      }
+      return ''
+    })
+    .join('')
+}
+
+const FALLBACK_BOARD = [
   {
     name: "Mactabene Amachree",
     title: "Founder & CEO",
@@ -44,9 +62,9 @@ const board = [
     bio: "Manages TFIHF's international relationships and partnerships across Africa and the United States.",
     image: "/images/board-dax.jpg",
   },
-];
+]
 
-const staff = [
+const FALLBACK_STAFF = [
   {
     name: "Menelik Garrick",
     title: "Lead of IT",
@@ -65,9 +83,9 @@ const staff = [
     bio: "Leads TFIHF's media production and digital communications, capturing the foundation's impact through storytelling, photography, and technology.",
     image: "/images/board-tamunosaki.jpg",
   },
-];
+]
 
-const pillars = [
+const FALLBACK_PILLARS = [
   {
     number: "01",
     title: "Mentorship & Leadership",
@@ -88,9 +106,57 @@ const pillars = [
     title: "Sports as a Platform",
     body: "Using basketball and athletics as a universal language to unify communities, break down barriers, and open doors that might otherwise stay closed.",
   },
-];
+]
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const payload = await getPayload({ config })
+
+  const [aboutCms, boardResult, staffResult] = await Promise.all([
+    payload.findGlobal({ slug: 'about-page' }).catch(() => null),
+    payload.find({ collection: 'board-members', sort: 'order', limit: 50 }).catch(() => null),
+    payload.find({ collection: 'staff-members', sort: 'order', limit: 50 }).catch(() => null),
+  ])
+
+  const board =
+    boardResult?.docs && boardResult.docs.length > 0
+      ? boardResult.docs.map((m) => ({
+          name: m.name,
+          title: m.title,
+          bio: m.bio ?? '',
+          image:
+            m.photo && typeof m.photo === 'object' && 'url' in m.photo
+              ? (m.photo.url as string)
+              : '/images/board-mactabene.webp',
+        }))
+      : FALLBACK_BOARD
+
+  const staff =
+    staffResult?.docs && staffResult.docs.length > 0
+      ? staffResult.docs.map((m) => ({
+          name: m.name,
+          title: m.title,
+          bio: m.bio ?? '',
+          image:
+            m.photo && typeof m.photo === 'object' && 'url' in m.photo
+              ? (m.photo.url as string)
+              : '/images/menelik-garrick.jpg',
+        }))
+      : FALLBACK_STAFF
+
+  const pillars =
+    aboutCms?.pillars && aboutCms.pillars.length > 0
+      ? aboutCms.pillars.map((p, i) => ({
+          number: String(i + 1).padStart(2, '0'),
+          title: p.title,
+          body: p.description ?? '',
+        }))
+      : FALLBACK_PILLARS
+
+  const founderStoryHtml =
+    aboutCms?.founderStory
+      ? renderRichText(aboutCms.founderStory) || ''
+      : ''
+
   return (
     <>
       <Navbar />
@@ -105,8 +171,8 @@ export default function AboutPage() {
               About <span className="text-[#C8102E]">TFIHF</span>
             </h1>
             <p className="text-white/60 mt-5 max-w-2xl mx-auto text-lg leading-relaxed">
-              The Future Is Here Foundation, Inc. is a nonprofit organization dedicated to rendering
-              help to humanity through sports, culture, and youth development — across the U.S. and internationally.
+              {aboutCms?.missionStatement ??
+                "The Future Is Here Foundation, Inc. is a nonprofit organization dedicated to rendering help to humanity through sports, culture, and youth development — across the U.S. and internationally."}
             </p>
             <div className="flex flex-wrap justify-center gap-6 mt-10">
               {[
@@ -136,25 +202,34 @@ export default function AboutPage() {
                   className="relative z-10 w-full h-[480px] object-cover object-top rounded-2xl"
                 />
                 <div className="absolute bottom-6 left-6 right-6 z-20 bg-[#0D0D0D]/95 backdrop-blur-sm rounded-xl px-5 py-4">
-                  <p className="text-[#FDB927] font-black text-sm italic">"Only the dreamer can see the dream."</p>
+                  <p className="text-[#FDB927] font-black text-sm italic">&ldquo;Only the dreamer can see the dream.&rdquo;</p>
                   <p className="text-white/60 text-xs mt-1">— Mactabene Amachree, Founder</p>
                 </div>
               </div>
 
               <div className="order-1 md:order-2">
-                <span className="text-[#C8102E] text-sm font-bold uppercase tracking-widest">The Founder's Story</span>
+                <span className="text-[#C8102E] text-sm font-bold uppercase tracking-widest">The Founder&apos;s Story</span>
                 <h2 className="text-3xl md:text-4xl font-black text-[#0D0D0D] mt-3 mb-6 leading-tight">
                   A Dream Born on the Court
                 </h2>
-                <p className="text-[#0D0D0D]/70 leading-relaxed mb-5 text-lg">
-                  Mactabene Amachree's life changed at age eight — when a simple invitation to a team practice opened a door she never knew existed. That moment planted a seed that would grow into a 17-year professional basketball career, Olympic participation, and a WNBA career that made her the <strong>first Nigerian-born woman to play in the league</strong>.
-                </p>
-                <p className="text-[#0D0D0D]/70 leading-relaxed mb-5">
-                  She went on to serve as General Manager of <strong>D'Tigress</strong>, Nigeria's national women's basketball team, helping build the infrastructure for the next generation of Nigerian athletes on the world stage.
-                </p>
-                <p className="text-[#0D0D0D]/70 leading-relaxed mb-8">
-                  TFIHF was born from that same belief: that one invitation, one opportunity, one mentor can change the entire trajectory of a young person's life. Mac built this foundation to be that invitation — at scale.
-                </p>
+                {founderStoryHtml ? (
+                  <div
+                    className="text-[#0D0D0D]/70 leading-relaxed mb-8 prose prose-p:mb-5"
+                    dangerouslySetInnerHTML={{ __html: founderStoryHtml }}
+                  />
+                ) : (
+                  <>
+                    <p className="text-[#0D0D0D]/70 leading-relaxed mb-5 text-lg">
+                      Mactabene Amachree&apos;s life changed at age eight — when a simple invitation to a team practice opened a door she never knew existed. That moment planted a seed that would grow into a 17-year professional basketball career, Olympic participation, and a WNBA career that made her the <strong>first Nigerian-born woman to play in the league</strong>.
+                    </p>
+                    <p className="text-[#0D0D0D]/70 leading-relaxed mb-5">
+                      She went on to serve as General Manager of <strong>D&apos;Tigress</strong>, Nigeria&apos;s national women&apos;s basketball team, helping build the infrastructure for the next generation of Nigerian athletes on the world stage.
+                    </p>
+                    <p className="text-[#0D0D0D]/70 leading-relaxed mb-8">
+                      TFIHF was born from that same belief: that one invitation, one opportunity, one mentor can change the entire trajectory of a young person&apos;s life. Mac built this foundation to be that invitation — at scale.
+                    </p>
+                  </>
+                )}
                 <div className="flex flex-wrap gap-3">
                   {["WNBA Pioneer", "Olympian", "World Cup Veteran", "FIBA Coach", "Community Builder"].map((tag) => (
                     <span key={tag} className="bg-[#C8102E]/10 text-[#C8102E] text-xs font-bold px-4 py-2 rounded-full border border-[#C8102E]/20">
@@ -176,7 +251,8 @@ export default function AboutPage() {
                 Bring Back the Village
               </h2>
               <p className="text-white/50 mt-5 max-w-3xl mx-auto text-lg leading-relaxed">
-                TFIHF's vision is rooted in a simple, ancient truth: <em>it takes a village to raise a child.</em> We exist to rebuild that village — using sports as the gathering place and mentorship as the foundation.
+                {aboutCms?.visionStatement ??
+                  "TFIHF's vision is rooted in a simple, ancient truth: it takes a village to raise a child. We exist to rebuild that village — using sports as the gathering place and mentorship as the foundation."}
               </p>
             </div>
 
@@ -192,7 +268,7 @@ export default function AboutPage() {
 
             <div className="mt-12 bg-[#C8102E] rounded-2xl p-8 md:p-12 text-center">
               <p className="text-white text-xl md:text-2xl font-black leading-relaxed max-w-3xl mx-auto">
-                "We serve the community through sports and culture, youth development and empowerment, event organization, and camps and clinics."
+                &ldquo;We serve the community through sports and culture, youth development and empowerment, event organization, and camps and clinics.&rdquo;
               </p>
               <p className="text-white/60 mt-4 text-sm font-medium">— TFIHF Mission Statement</p>
             </div>
@@ -311,7 +387,7 @@ export default function AboutPage() {
         </section>
 
       </main>
-      <Footer />
+      <FooterCMS />
     </>
-  );
+  )
 }

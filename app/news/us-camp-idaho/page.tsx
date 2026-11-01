@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import FooterCMS from "@/components/FooterCMS";
 
 export default function USCampIdahoPage() {
   return (
@@ -101,7 +101,7 @@ export default function USCampIdahoPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      <FooterCMS />
     </>
   );
 }

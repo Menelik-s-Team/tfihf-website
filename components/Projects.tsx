@@ -4,7 +4,17 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 type MediaItem = { type: "image" | "video"; url: string };
 
-const projects = [
+type Project = {
+  year: string;
+  tag: string;
+  title: string;
+  location: string;
+  description: string;
+  cover: string;
+  media: MediaItem[];
+};
+
+const HARDCODED_PROJECTS: Project[] = [
   {
     year: "2025",
     tag: "Camp & Tournament",
@@ -238,7 +248,9 @@ function isVideo(url: string) {
   return url.endsWith(".mp4") || url.endsWith(".mov") || url.endsWith(".webm");
 }
 
-export default function Projects() {
+type ProjectsClientProps = { projects: Project[] };
+
+function ProjectsClient({ projects }: ProjectsClientProps) {
   const [lightbox, setLightbox] = useState<{ items: MediaItem[]; idx: number } | null>(null);
 
   function openLightbox(items: MediaItem[], idx: number) { setLightbox({ items, idx }); }
@@ -394,4 +406,12 @@ export default function Projects() {
       )}
     </section>
   );
+}
+
+// Server-side data fetching — NOTE: Projects component uses "use client" at top for the lightbox,
+// so we export a wrapper that is used from page.tsx. The data is passed down as a prop.
+// However since this file starts with "use client", we export a default that accepts projects prop.
+export default function Projects({ projects }: { projects?: Project[] }) {
+  const finalProjects = (projects && projects.length > 0) ? projects : HARDCODED_PROJECTS;
+  return <ProjectsClient projects={finalProjects} />;
 }

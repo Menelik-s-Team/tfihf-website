@@ -1,30 +1,34 @@
-import { Trophy, Users, MapPin } from "lucide-react";
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
-const programs = [
+const FALLBACK_PROGRAMS = [
   {
-    icon: Trophy,
     title: "Sports & Culture",
     description:
       "Basketball courts, tournaments, and equipment donations — using the game to open doors and build discipline in youth across communities.",
-    color: "#C8102E",
   },
   {
-    icon: Users,
     title: "Youth Development",
     description:
       "Structured mentorship programs, leadership training, and life skills workshops designed to equip the next generation for success.",
-    color: "#C8102E",
   },
   {
-    icon: MapPin,
     title: "Camps & Clinics",
     description:
       "Camps are coming soon. More information TBA — stay connected to be the first to know when registration opens.",
-    color: "#C8102E",
   },
-];
+]
 
-export default function Programs() {
+async function getProgramsData() {
+  const payload = await getPayload({ config })
+  return payload.findGlobal({ slug: 'homepage' })
+}
+
+export default async function Programs() {
+  const cms = await getProgramsData().catch(() => null)
+  const programs =
+    cms?.programs && cms.programs.length > 0 ? cms.programs : FALLBACK_PROGRAMS
+
   return (
     <section id="programs" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">
@@ -48,7 +52,14 @@ export default function Programs() {
               className="bg-white rounded-2xl p-8 border-2 border-gray-100 hover:border-[#C8102E] hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group"
             >
               <div className="w-16 h-16 rounded-2xl bg-[#C8102E] flex items-center justify-center mb-6 group-hover:bg-[#FDB927] transition-colors shadow-lg shadow-[#C8102E]/20">
-                <p.icon size={28} color="white" />
+                {'icon' in p && p.icon ? (
+                  <span className="text-2xl">{p.icon}</span>
+                ) : (
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v4l3 3" />
+                  </svg>
+                )}
               </div>
               <h3 className="text-xl font-black text-[#0D0D0D] mb-3">{p.title}</h3>
               <p className="text-[#0D0D0D]/60 leading-relaxed">{p.description}</p>
@@ -65,5 +76,5 @@ export default function Programs() {
         </div>
       </div>
     </section>
-  );
+  )
 }

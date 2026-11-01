@@ -1,4 +1,46 @@
-export default function Mission() {
+import { getPayload } from 'payload'
+import config from '@payload-config'
+
+const FALLBACKS = {
+  heading: "Our Mission",
+  body: `<p>TFIHF is a Non-Profit organization formed to render help to humanity. We serve the community through sports and culture, youth development and empowerment, event organization, and camps and clinics.</p><p>We help youth grow into their full potential through Mentorship and Leadership training — using sports as a platform to unify our community, engage our youth, and create opportunities through skills and leadership.</p>`,
+  imageUrl: "/images/mission-community.jpg",
+}
+
+function renderRichText(content: unknown): string {
+  if (!content || typeof content !== 'object') return ''
+  const root = (content as { root?: { children?: unknown[] } }).root
+  if (!root?.children) return ''
+  return root.children
+    .map((node: unknown) => {
+      const n = node as { type?: string; children?: { text?: string }[] }
+      if (n.type === 'paragraph') {
+        const text = n.children?.map((c) => c.text || '').join('') || ''
+        return `<p>${text}</p>`
+      }
+      return ''
+    })
+    .join('')
+}
+
+async function getMissionData() {
+  const payload = await getPayload({ config })
+  return payload.findGlobal({ slug: 'homepage' })
+}
+
+export default async function Mission() {
+  const cms = await getMissionData().catch(() => null)
+
+  const heading = cms?.mission?.heading ?? FALLBACKS.heading
+  const bodyHtml =
+    cms?.mission?.body ? renderRichText(cms.mission.body) || FALLBACKS.body : FALLBACKS.body
+
+  const mediaDoc = cms?.mission?.image
+  const imageUrl =
+    mediaDoc && typeof mediaDoc === 'object' && 'url' in mediaDoc && mediaDoc.url
+      ? (mediaDoc.url as string)
+      : FALLBACKS.imageUrl
+
   return (
     <section id="mission" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
@@ -7,19 +49,12 @@ export default function Mission() {
             Who We Are
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-[#0D0D0D] mt-3 mb-6 leading-tight">
-            Our Mission
+            {heading}
           </h2>
-          <p className="text-[#0D0D0D]/70 text-lg leading-relaxed mb-6">
-            TFIHF is a Non-Profit organization formed to render help to humanity.
-            We serve the community through sports and culture, youth development
-            and empowerment, event organization, and camps and clinics.
-          </p>
-          <p className="text-[#0D0D0D]/70 text-lg leading-relaxed mb-8">
-            We help youth grow into their full potential through Mentorship and
-            Leadership training — using sports as a platform to unify our
-            community, engage our youth, and create opportunities through skills
-            and leadership.
-          </p>
+          <div
+            className="text-[#0D0D0D]/70 text-lg leading-relaxed mb-8 prose prose-p:mb-5"
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
           <div className="flex flex-col gap-3">
             {[
               "Youth Mentorship & Leadership Training",
@@ -38,7 +73,7 @@ export default function Mission() {
         <div className="relative">
           <div className="absolute -top-4 -left-4 w-full h-full border-2 border-[#C8102E] rounded-2xl" />
           <img
-            src="/images/mission-community.jpg"
+            src={imageUrl}
             alt="TFIHF community event"
             className="relative z-10 w-full h-[420px] object-cover rounded-2xl"
           />
@@ -51,5 +86,5 @@ export default function Mission() {
         </div>
       </div>
     </section>
-  );
+  )
 }
