@@ -144,7 +144,10 @@ export default buildConfig({
         media: true,
         gallery: true,
       },
-      token: process.env.BLOB_READ_WRITE_TOKEN || '',
+      // Use the Vercel-managed integration token (public store) for preview/production.
+      // BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN is the marketplace connection token;
+      // fall back to BLOB_READ_WRITE_TOKEN for local dev.
+      token: process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN || '',
     }),
   ],
 })
