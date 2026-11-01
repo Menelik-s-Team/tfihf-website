@@ -30,6 +30,7 @@ async function revalidate(paths: string[]) {
 }
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
   admin: {
     user: Users.slug,
     meta: {
@@ -124,19 +125,21 @@ export default buildConfig({
     },
   ],
   editor: lexicalEditor({}),
-  email: nodemailerAdapter({
-    defaultFromAddress: process.env.TITAN_EMAIL || 'admin@tfihf.com',
-    defaultFromName: 'TFIHF',
-    transport: nodemailer.createTransport({
-      host: 'smtp.titan.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.TITAN_EMAIL,
-        pass: process.env.TITAN_PASSWORD,
-      },
-    }),
-  }),
+  email: (process.env.TITAN_EMAIL && process.env.TITAN_PASSWORD)
+    ? nodemailerAdapter({
+        defaultFromAddress: process.env.TITAN_EMAIL,
+        defaultFromName: 'TFIHF',
+        transport: nodemailer.createTransport({
+          host: 'smtp.titan.email',
+          port: 587,
+          secure: false,
+          auth: {
+            user: process.env.TITAN_EMAIL,
+            pass: process.env.TITAN_PASSWORD,
+          },
+        }),
+      })
+    : undefined,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: './payload-types.ts',
